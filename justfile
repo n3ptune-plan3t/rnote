@@ -49,7 +49,7 @@ prerequisites:
 
     # Build and install libadapta from GitHub
     if [[ ! -d libadapta ]]; then
-        git clone https://github.com/linuxmint/libadapta.git
+        git clone https://github.com/xapp-project/libadapta.git
     fi
     cd libadapta
     meson setup build --prefix=/usr

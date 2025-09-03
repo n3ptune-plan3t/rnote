@@ -1,5 +1,3 @@
----
-
 name: Generate Dist Archive
 
 "on":
@@ -18,9 +16,9 @@ jobs:
 
       # Necessary so that 'Checkout' will clone as repository, which the `meson dist` commands needs,
       # and that the artifact can be uploaded to github as release asset
-      - name: Install dependencies
+      - name: Install base tools
         run: |
-          dnf install -y git gh
+          dnf install -y git gh just lsb_release
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,9 +32,8 @@ jobs:
         id: toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Prerequisites
+      - name: Prerequisites (with libadapta)
         run: |
-          dnf install -y just lsb_release
           just ci=true prerequisites
 
       - name: Setup

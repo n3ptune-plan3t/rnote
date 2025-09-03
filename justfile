@@ -4,9 +4,6 @@
 ci := "false"
 log_level := "debug"
 build_folder := "_mesonbuild"
-flatpak_app_folder := "_flatpak_app"
-flatpak_repo_folder := "_flatpak_repo"
-mingw64_prefix_path := "C:/msys64/mingw64"
 
 [private]
 linux_distr := `lsb_release -ds | tr '[:upper:]' '[:lower:]'`
@@ -57,24 +54,6 @@ prerequisites:
     {{sudo_cmd}} ninja -C build install
     cd ..
 
-prerequisites-flatpak: prerequisites
-    #!/usr/bin/env bash
-    set -euxo pipefail
-    if [[ ('{{linux_distr}}' =~ 'fedora') ]]; then
-        {{sudo_cmd}} dnf install -y \
-            flatpak flatpak-builder
-    elif [[ '{{linux_distr}}' =~ 'debian' || '{{linux_distr}}' =~ 'ubuntu' ]]; then
-        {{sudo_cmd}} apt-get update
-        {{sudo_cmd}} apt-get install -y \
-            flatpak flatpak-builder
-    else
-        echo "Unable to install system dependencies, unsupported distro."
-        exit 1
-    fi
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-    flatpak install -y org.gnome.Platform//48 org.gnome.Sdk//48 org.freedesktop.Sdk.Extension.rust-stable//24.08 \
-        org.freedesktop.Sdk.Extension.llvm19//24.08
-
 prerequisites-dev: prerequisites
     #!/usr/bin/env bash
     set -euxo pipefail
@@ -96,18 +75,6 @@ prerequisites-dev: prerequisites
         https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
     cargo binstall -y cargo-nextest cargo-edit cargo-deny
 
-# in MSYS2 shell
-prerequisites-win:
-    pacman -S --noconfirm \
-        unzip git mingw-w64-x86_64-xz mingw-w64-x86_64-pkgconf mingw-w64-x86_64-gcc mingw-w64-x86_64-clang \
-        mingw-w64-x86_64-toolchain mingw-w64-x86_64-autotools mingw-w64-x86_64-make mingw-w64-x86_64-cmake \
-        mingw-w64-x86_64-meson mingw-w64-x86_64-diffutils mingw-w64-x86_64-desktop-file-utils \
-        mingw-w64-x86_64-appstream mingw-w64-x86_64-gtk4 mingw-w64-x86_64-poppler \
-        mingw-w64-x86_64-poppler-data mingw-w64-x86_64-angleproject
-    mv /mingw64/lib/libpthread.dll.a /mingw64/lib/libpthread.dll.a.bak
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    export PATH="$HOME/.cargo/bin:$PATH"
-
 setup-dev *MESON_ARGS:
     meson setup \
         --prefix=/usr \
@@ -121,16 +88,6 @@ setup-release *MESON_ARGS:
         --prefix=/usr \
         -Dci={{ ci }} \
         {{ MESON_ARGS }} \
-        {{ build_folder }}
-
-# in MINGW64 shell
-setup-win-installer installer_name="rnote-win-installer":
-    meson setup \
-        --prefix={{ mingw64_prefix_path }} \
-        -Dprofile=default \
-        -Dcli=true \
-        -Dwin-installer-name={{ installer_name }} \
-        -Dci={{ ci }} \
         {{ build_folder }}
 
 clean:
@@ -163,39 +120,14 @@ build:
     meson compile ui-cargo-build -C {{ build_folder }}
     meson compile cli-cargo-build -C {{ build_folder }}
 
-build-flatpak:
-    flatpak-builder \
-        --user \
-        --repo={{ flatpak_repo_folder }} \
-        --force-clean \
-        {{ flatpak_app_folder}} \
-        build-aux/com.github.flxzt.rnote.Devel.yaml
-
-build-flatpak-bundle:
-    flatpak build-bundle \
-        {{ flatpak_repo_folder }} \
-        com.github.flxzt.rnote.Devel.flatpak \
-        com.github.flxzt.rnote.Devel \
-        --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
-
-build-win-installer: build
-    meson compile rnote-gmo -C {{ build_folder }}
-    meson compile build-installer -C {{ build_folder }}
-
 install:
     meson install -C {{ build_folder }}
-
-install-flatpak:
-    flatpak-builder --user --install {{ flatpak_app_folder }} build-aux/com.github.flxzt.rnote.Devel.yaml
 
 run-ui:
     {{ build_folder }}/target/debug/rnote
 
 run-cli:
     {{ build_folder }}/target/debug/rnote-cli
-
-run-flatpak:
-    flatpak-builder --run {{ flatpak_app_folder }} build-aux/com.github.flxzt.rnote.Devel.yaml rnote
 
 test:
     meson test -C {{ build_folder }}

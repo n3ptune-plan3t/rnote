@@ -139,7 +139,7 @@ if build_ui == true
     dependency('appstream')
     dependency('poppler-glib', version: '>= 20.09')
     dependency('gtk4', version: '>= 4.18')
-    dependency('libadwaita-1', version: '>= 1.7')
+    dependency('libadapta-1', version: '>= 1.5')
 
     # ui crate
     subdir('crates/rnote-ui')

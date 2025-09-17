@@ -1,0 +1,25 @@
+Source: rnote
+Section: graphics
+Priority: optional
+Maintainer: Your Name <your.email@example.com>
+Build-Depends: debhelper-compat (= 13),
+               meson,
+               pkg-config,
+               rustc,
+               cargo,
+               clang,
+               libsass-dev,
+               libgtk-4-dev,
+               libadwaita-1-dev,
+               libpoppler-glib-dev,
+               libgstreamer1.0-dev,
+               libglib2.0-dev,
+               appstream-util,
+               desktop-file-utils
+Package: rnote
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: Sketch and take handwritten notes
+ Rnote is an open-source vector-based drawing app for sketching,
+ handwritten notes and to annotate documents and pictures.

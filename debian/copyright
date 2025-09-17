@@ -1,0 +1,11 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: rnote
+Source: https://github.com/flxzt/rnote
+
+Files: *
+Copyright: 2023 The Rnote Authors
+License: GPL-3.0-or-later
+
+Files: debian/*
+Copyright: 2025 Your Name <your.email@example.com>
+License: GPL-3.0-or-later
